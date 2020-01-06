@@ -507,9 +507,16 @@ open class KolodaView: UIView, DraggableCardDelegate {
     }
     
     public func revertAction(direction: SwipeResultDirection? = nil) {
-        guard currentCardIndex > 0 && !animationSemaphore.isAnimating else {
+        guard currentCardIndex > 0 else {
             return
         }
+      
+        if animationSemaphore.isAnimating {
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.revertAction(direction: direction)
+          }
+        }
+      
         if countOfCards - currentCardIndex >= countOfVisibleCards {
             if let lastCard = visibleCards.last {
                 lastCard.removeFromSuperview()
