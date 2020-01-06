@@ -17,6 +17,8 @@ private let defaultBackgroundCardsLeftMargin: CGFloat = 8.0
 private let defaultBackgroundCardFrameAnimationDuration: TimeInterval = 0.2
 private let defaultAppearanceAnimationDuration: TimeInterval = 0.8
 private let defaultReverseAnimationDuration: TimeInterval = 0.3
+private let defaultAllowedDirection: PanDirection = .all
+private let defaultCancelsTouchesInView: Bool = false
 
 // Opacity values
 private let defaultAlphaValueOpaque: CGFloat = 1.0
@@ -100,6 +102,12 @@ open class KolodaView: UIView, DraggableCardDelegate {
     public var rotationMax: CGFloat?
     public var rotationAngle: CGFloat?
     public var scaleMin: CGFloat?
+  
+    // Pan gesture
+    public var allowedDirection: PanDirection = defaultAllowedDirection
+  
+    // Tap gesture
+    public var cancelsTouchesInView: Bool = defaultCancelsTouchesInView
 
     // Animation durations
     public var appearanceAnimationDuration = defaultAppearanceAnimationDuration

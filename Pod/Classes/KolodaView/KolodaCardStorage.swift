@@ -39,6 +39,8 @@ extension KolodaView {
         if let scaleMin = self.scaleMin {
             card.scaleMin = scaleMin
         }
+        card.allowedDirection = allowedDirection
+        card.cancelsTouchesInView = cancelsTouchesInView
     }
     
 }

@@ -36,6 +36,10 @@ private let defaultRotationMax: CGFloat = 1.0
 private let defaultRotationAngle = CGFloat(Double.pi) / 10.0
 private let defaultScaleMin: CGFloat = 0.8
 
+//Default values
+private let defaultAllowedDirection: PanDirection = .all
+private let defaultCancelsTouchesInView: Bool = false
+
 private let screenSize = UIScreen.main.bounds.size
 
 //Reset animation constants
@@ -51,6 +55,20 @@ public class DraggableCardView: UIView, UIGestureRecognizerDelegate {
     public var rotationMax = defaultRotationMax
     public var rotationAngle = defaultRotationAngle
     public var scaleMin = defaultScaleMin
+  
+    // Pan gesture
+    public var allowedDirection: PanDirection = defaultAllowedDirection {
+      didSet {
+        panGestureRecognizer.direction = allowedDirection
+      }
+    }
+  
+    // Tap gesture
+    public var cancelsTouchesInView: Bool = defaultCancelsTouchesInView  {
+      didSet {
+        tapGestureRecognizer.cancelsTouchesInView = cancelsTouchesInView
+      }
+    }
     
     weak var delegate: DraggableCardDelegate? {
         didSet {
@@ -63,7 +81,7 @@ public class DraggableCardView: UIView, UIGestureRecognizerDelegate {
     private var overlayView: OverlayView?
     public private(set) var contentView: UIView?
     
-    private var panGestureRecognizer: UIPanGestureRecognizer!
+    private var panGestureRecognizer: PanDirectionGestureRecognizer!
     private var tapGestureRecognizer: UITapGestureRecognizer!
     private var animationDirectionY: CGFloat = 1.0
     private var dragDistance = CGPoint.zero
@@ -102,12 +120,12 @@ public class DraggableCardView: UIView, UIGestureRecognizerDelegate {
     }
     
     private func setup() {
-        panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(DraggableCardView.panGestureRecognized(_:)))
+        panGestureRecognizer = PanDirectionGestureRecognizer(direction: allowedDirection, target: self, action: #selector(DraggableCardView.panGestureRecognized(_:)))
         addGestureRecognizer(panGestureRecognizer)
         panGestureRecognizer.delegate = self
         tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(DraggableCardView.tapRecognized(_:)))
         tapGestureRecognizer.delegate = self
-        tapGestureRecognizer.cancelsTouchesInView = false
+        tapGestureRecognizer.cancelsTouchesInView = cancelsTouchesInView
         addGestureRecognizer(tapGestureRecognizer)
 
         if let delegate = delegate {
@@ -473,4 +491,39 @@ public class DraggableCardView: UIView, UIGestureRecognizerDelegate {
             overlayView?.pop_add(overlayAlphaAnimation, forKey: "swipeOverlayAnimation")
         }
     }
+  
+}
+
+public enum PanDirection {
+  case vertical
+  case horizontal
+  case all
+}
+
+class PanDirectionGestureRecognizer: UIPanGestureRecognizer {
+  
+  var direction: PanDirection
+  
+  init(direction: PanDirection, target: AnyObject, action: Selector) {
+    self.direction = direction
+    super.init(target: target, action: action)
+  }
+  
+  override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+    super.touchesMoved(touches, with: event)
+    
+    if direction == .all { return }
+    
+    if state == .began {
+      let vel = velocity(in: view)
+      switch direction {
+      case .horizontal where fabs(vel.y) > fabs(vel.x):
+        state = .cancelled
+      case .vertical where fabs(vel.x) > fabs(vel.y):
+        state = .cancelled
+      default:
+        break
+      }
+    }
+  }
 }
